@@ -6,7 +6,11 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="theme-color" content="#2f6f6b" />
-<title>Dog Health Tracker</title>
+<meta name="apple-mobile-web-app-title" content="Pet Health" />
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<link rel="icon" href="icon-192.png" />
+<title>Pet Health Tracker</title>
 <style>
   :root{
     --bg:#f4f6f5; --card:#ffffff; --ink:#1f2a2a; --muted:#6b7a78;
@@ -162,6 +166,9 @@
     transition:.25s;z-index:60;box-shadow:var(--shadow);white-space:nowrap;
   }
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .update-bar{position:fixed;left:0;right:0;bottom:0;z-index:66;background:var(--teal);color:#fff;display:none;align-items:center;justify-content:center;gap:14px;padding:13px;font-weight:600;box-shadow:0 -2px 12px rgba(0,0,0,.25)}
+  .update-bar.show{display:flex}
+  .update-bar button{background:#fff;color:var(--teal);border:none;border-radius:8px;padding:8px 18px;font-weight:700;cursor:pointer}
   .rangebtns{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
   .rangebtns button{flex:1;min-width:60px;padding:8px;border-radius:9px;border:1.5px solid var(--line);background:#fff;font-size:13px;font-weight:600;cursor:pointer;color:var(--ink)}
   .rangebtns button.sel{background:var(--teal);color:#fff;border-color:var(--teal)}
@@ -405,6 +412,7 @@
       <div style="height:10px"></div>
       <button class="btn ghost row2" onclick="document.getElementById('importInput').click()">⬆️ Import backup</button>
       <input type="file" id="importInput" accept="application/json,.json" style="display:none" />
+      <div class="muted" style="margin-top:14px;text-align:center">🐾 Pet Health Tracker · v1.0.0 · your data stays on this device</div>
     </div>
   </section>
 
@@ -435,6 +443,7 @@
 </nav>
 
 <div class="toast" id="toast"></div>
+<div class="update-bar" id="updateBar">🔄 New version available <button onclick="doUpdate()">Update</button></div>
 <div class="modal-back" id="modal"><div class="modal" id="modalBody"></div></div>
 <div class="viewer" id="viewer" onclick="closeViewer()"><button class="close">✕</button><img id="viewerImg" alt="full"/></div>
 
@@ -1154,6 +1163,27 @@ document.querySelector('#sympChips .chip[data-c="Diarrhea"]').classList.add("sel
   renderMeds();renderPresets();renderNames();renderCoughs();renderSymps();renderVisits();renderInventory();
   checkReminders();setInterval(checkReminders,30000);
 })();
+
+/* ---------- PWA: offline install + update notifications ---------- */
+let swReg=null;
+function doUpdate(){if(swReg&&swReg.waiting)swReg.waiting.postMessage("SKIP_WAITING");document.getElementById("updateBar").classList.remove("show");}
+if("serviceWorker" in navigator){
+  window.addEventListener("load",()=>{
+    navigator.serviceWorker.register("service-worker.js").then(reg=>{
+      swReg=reg;
+      reg.addEventListener("updatefound",()=>{
+        const nw=reg.installing; if(!nw)return;
+        nw.addEventListener("statechange",()=>{
+          if(nw.state==="installed" && navigator.serviceWorker.controller){
+            swReg=reg; document.getElementById("updateBar").classList.add("show");
+          }
+        });
+      });
+    }).catch(()=>{});
+    let refreshing=false;
+    navigator.serviceWorker.addEventListener("controllerchange",()=>{if(refreshing)return;refreshing=true;location.reload();});
+  });
+}
 </script>
 </body>
 </html>

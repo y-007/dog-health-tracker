@@ -1,0 +1,16 @@
+{
+  "name": "Pet Health Tracker",
+  "short_name": "Pet Health",
+  "description": "Track your pet's medications, coughs, symptoms, and vet visits. Fully offline; your data stays on your device.",
+  "start_url": "./dog-health-tracker.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#2f6f6b",
+  "theme_color": "#2f6f6b",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

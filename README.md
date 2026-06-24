@@ -1,136 +1,93 @@
 # 🐾 Pet Health Tracker
 
-A single-file, **offline** web app for tracking your pet's medications, coughs, symptoms, and vet visits — then producing a clean, printable summary to bring to the vet.
+A free, **offline** app for tracking your pet's medications, coughs, symptoms, and vet visits — then producing a clean, printable summary to bring to the vet.
 
-Everything runs in your browser. There is no server, no account, and no internet required. All data (including photos) is stored **locally on your device**.
+**Anyone can use it for their own pet(s).** Your records and photos are stored **only on your own device, inside your own copy of the app** — nothing is ever uploaded, there are no accounts, and there is no tracking.
 
 ---
 
-## 📁 The app
+## ▶️ Use it now
 
-The entire app is one file:
+**Open the app:** https://y-007.github.io/dog-health-tracker/
 
-```
-dog-health-tracker.html
-```
+That's it — it works in any modern browser, on phone or computer. To make it a real app on your phone, install it (below).
 
-Just open it in a browser. To make it feel like a real app on your phone, see [Install on your phone](#-install-on-your-phone-offline).
+---
+
+## 📲 Install it like a normal app (recommended)
+
+Open the link above on your phone, then:
+
+- **iPhone (Safari):** tap the **Share** button → **Add to Home Screen**.
+- **Android (Chrome):** tap the **⋮** menu → **Install app** / **Add to Home screen**.
+
+You'll get a **🐾 paw icon** on your home screen. Tap it and the app opens **full-screen, like any other app, and works offline**. Everything you enter stays inside that app on your device.
+
+> 💡 You can also download `dog-health-tracker.html` from this repo and open it directly — but installing from the link gives the proper app icon and offline experience.
+
+---
+
+## 🔒 Your data is yours
+
+- Records are saved in your browser's **localStorage**; photos in **IndexedDB** — both **on your device only**.
+- The app makes **no network calls**, has **no accounts**, and collects **no analytics**.
+- Each person's data is completely separate — there is no shared server, so one user can never see another's pets.
+- The only time data leaves your device is when **you** choose to **Export a backup** or **Print** a report.
+
+⚠️ Because data is local, **clearing your browser's data or deleting the app can erase your history.** Use **Vet tab → Export backup** now and then, and keep the file somewhere safe. (On iPhone, deleting the home-screen app can clear its data — back up first.)
+
+---
+
+## 🔄 Updates
+
+When a new version is published, the app handles updates for you:
+
+1. Next time you open it **while online**, it detects the new version.
+2. A banner appears: **"🔄 New version available — Update."**
+3. Tap **Update** and the app reloads on the latest version.
+
+No app store, no reinstalling — the icon stays the same, and **your data is never touched by an update**. If you ignore the banner, it updates automatically next time you fully close and reopen the app. The current version is shown at the bottom of the **Vet** tab.
 
 ---
 
 ## ✨ Features
 
-### 🐶 Multi-pet support
-- Track several pets, each with **completely separate** records (medications, coughs, symptoms, vet info, visits, reminders, inventory, and photo).
-- Switch pets from the dropdown in the header.
-- Add / rename / delete pets with the **⚙︎** button.
-- Each pet has its own profile photo (tap the avatar to set one).
-
-### 💊 Medication logging
-- Record **medication name**, **dosage**, **date/time**, and notes.
-- **Dosage uses Amount + Form** — Tablet, Capsule, Chewable, Liquid (mL), Drops, Syringe (mL), Injection (mL), Sachet/Powder, Spray, or Other.
-- Quick amount chips (**¼ ½ 1 1½ 2**) make half-tablets one tap.
-- **One-tap presets**: previously logged med + dose combos appear as buttons to re-log instantly.
-- Edit or delete any entry.
-
-### ⏰ AM/PM reminders
-- Set a medication, dose, and **AM time + PM time**.
-- While the app is open, you get a browser notification when a dose is due (and an in-app alert).
-- See [Limitations](#-limitations) regarding background notifications.
-
-### 📅 Weekly "at a glance" grid
-- 7 days across the columns, **AM / PM** as rows.
-- **✅** taken (with time) · **⏰** due now · **⭕** missed.
-- **Tap a cell** to mark a dose taken (or tap a ✅ to undo). You can also backfill past days.
-- Marking/undoing a dose here automatically updates **inventory**.
-
-### 📦 Medication inventory
-- Enter **current stock** and a **low-supply threshold** per medication.
-- Logged doses (manual, preset, or grid "mark taken") **auto-subtract** from stock when the name + form match.
-- When stock hits the threshold you get a **⚠️ Low stock** alert and a **🛒 Time to refill** banner.
-- **＋** to refill, plus edit/delete per item.
-
-### 😮‍💨 Cough logging
-- Record the **time** and the **condition** when it happened: Sleeping/Resting, Excitement, Activity/Exercise, Eating/Drinking, or Other.
-- Add **severity** (Mild / Moderate / Severe) and notes.
-- **Log now** button records a cough at the current moment.
-
-### 🩺 Symptom logging with photos
-- Track symptoms like Diarrhea, Loose stool, Vomiting, Injury, Skin/Rash, Appetite, or Other.
-- **Attach a photo** (opens the camera on a phone) — useful for showing the vet stool, rashes, or injuries.
-- Tap a thumbnail to view full-screen. Photos are included in the report.
-
-### 🏥 Vet info & visit records
-- Save your **clinic name, doctor, phone, and address**.
-- Log visits with **date, reason, diagnosis/treatment, and price paid**.
-- See a running **total spent**.
-
-### 📋 Vet report
-- Pick a **date range** (7/14/30/90 days, All, or custom From/To).
-- Summary: total **Coughs**, **Avg coughs/day** (over the selected range), **Symptoms**, and **Med doses**.
-- **Coughs-per-day bar chart**, condition breakdown, severity totals.
-- Symptom breakdown, medications given, vet visits & costs.
-- A combined **detailed log** timeline (with symptom photos).
-- **🖨 Print / Save as PDF** — formatted cleanly for the vet, with your pet's photo and clinic info in the header.
-
-### 🌙 Dark mode
-- Toggle with the **🌙 / ☀️** button for a calmer view during evening care. Your choice is remembered.
-
-### 💾 Backup & restore
-- **Export backup** saves *all pets* and *all photos* into one `.json` file.
-- **Import backup** restores from that file.
-- Found at the bottom of the **Vet** tab.
-
----
-
-## 🚀 Getting started
-
-1. Open `dog-health-tracker.html` in any modern browser (Chrome, Safari, Edge, Firefox).
-2. Name your pet (header dropdown → it starts as "My pet"; rename via **⚙︎**).
-3. Tap the avatar to add a photo (optional).
-4. Start logging from the bottom navigation: **Meds · Cough · Symptom · Report · Vet**.
-
----
-
-## 📱 Install on your phone (offline)
-
-1. Transfer `dog-health-tracker.html` to your phone (email it to yourself, AirDrop, or a cloud link) and open it once in your mobile browser.
-2. **iPhone (Safari):** Share → **Add to Home Screen**.
-3. **Android (Chrome):** menu **⋮** → **Add to Home screen**.
-
-It then launches like an app and works fully offline.
-
----
-
-## 💾 Where your data lives (important)
-
-- Data is stored in your browser's **localStorage** (records) and **IndexedDB** (photos), on **this device only**.
-- It is **not** synced across devices and is **not** backed up to any cloud.
-- Clearing your browser's site data, or deleting the app, **erases your history**.
-
-👉 **Export a backup regularly** (Vet tab → Export backup) and keep the file somewhere safe.
+- **🐶 Multi-pet** — track several pets, each with completely separate records and its own photo.
+- **💊 Medication logging** — name, dosage as **Amount + Form** (Tablet, Capsule, Liquid mL, Drops, Syringe, Injection, Sachet, Spray…), with quick ½/1/2 chips and one-tap presets.
+- **⏰ AM/PM reminders** — get notified when a dose is due (while the app is open).
+- **📅 Weekly grid** — 7 days × AM/PM; tap to mark a dose taken (✅) or missed (⭕).
+- **📦 Inventory** — set current stock + a low threshold; doses auto-subtract, with a **🛒 refill** alert.
+- **😮‍💨 Cough logging** — time, condition (sleeping, excitement, activity…), severity, notes.
+- **🩺 Symptom logging with photos** — diarrhea, vomiting, injury, rash, etc., with camera photos.
+- **🏥 Vet info & visits** — clinic/doctor/phone/address, plus visits with diagnosis and price (running total).
+- **📋 Vet report** — pick a date range; see totals, **avg coughs/day**, a coughs-per-day **bar chart**, breakdowns, and a detailed log. **Print / Save as PDF**.
+- **🌙 Dark mode** — a calmer view for evening care.
+- **💾 Backup & restore** — export/import all pets and photos as a single file.
 
 ---
 
 ## ⚠️ Limitations
 
-- **Notifications only fire while the app is open** in the browser. A standalone offline file cannot wake itself in the background. True background alarms would require hosting the app on a server (HTTPS) so it can run a background worker.
-- **Inventory matching is by name + form.** If a logged dose's medication name and form don't exactly match an inventory item, the dose is still recorded but stock won't change.
-- Deleting a logged dose from the **Recent medications** list does not return it to stock (use the inventory **＋** to correct). Undoing via the weekly grid *does* return it to stock.
-
----
-
-## 🔒 Privacy
-
-Your data never leaves your device. There are no analytics, no accounts, and no network calls. The only time anything leaves the app is when **you** export a backup file or print a report.
+- **Reminders/notifications only fire while the app is open** in the browser. A purely client-side app cannot wake itself in the background.
+- **Inventory matching is by name + form** — if a logged dose's name/form doesn't match an inventory item, the dose is recorded but stock won't change.
+- Deleting a dose from **Recent medications** doesn't return it to stock (use the inventory **＋**). Undoing via the weekly grid *does*.
 
 ---
 
 ## 🛠️ Technical notes
 
-- Pure **HTML + CSS + vanilla JavaScript** in a single file. No build step, no dependencies, no frameworks.
-- Storage:
-  - `localStorage` — text records, namespaced per pet (e.g. `dht_meds_v1_<petId>`).
-  - `IndexedDB` (`dht_db` → `images` store) — compressed photos (pet avatars and symptom photos).
-- Photos are auto-resized/compressed on upload to keep storage small.
-- Backup files are plain JSON (version 2 = multi-pet; older version 1 single-pet backups still import).
+- Pure **HTML + CSS + vanilla JavaScript** in a single file (`dog-health-tracker.html`). No build step, no dependencies.
+- **PWA** support via `manifest.json` + `service-worker.js` (offline + installable). `index.html` redirects to the app.
+- Storage: `localStorage` (records, namespaced per pet, e.g. `dht_meds_v1_<petId>`) and `IndexedDB` (`dht_db` → `images`) for compressed photos.
+- Backups are plain JSON (version 2 = multi-pet; version 1 single-pet backups still import).
+
+### Releasing an update (for maintainers)
+1. Edit `dog-health-tracker.html` (and/or other files).
+2. Bump the version in **two places**: `CACHE` in `service-worker.js` (e.g. `v1.0.1`) and the version line at the bottom of the Vet tab in `dog-health-tracker.html`.
+3. Commit and push to `main`. GitHub Pages redeploys; users get the in-app update banner.
+
+---
+
+## 📄 License
+
+[MIT](LICENSE) — free to use, modify, and share.
