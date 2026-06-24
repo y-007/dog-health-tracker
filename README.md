@@ -12,6 +12,14 @@ A free, **offline** app for tracking your pet's medications, coughs, symptoms, a
 
 That's it — it works in any modern browser, on phone or computer. To make it a real app on your phone, install it (below).
 
+> ⚠️ **Share the link above, not the GitHub repo link.** `github.com/...` shows the source code; `y-007.github.io/dog-health-tracker/` is the actual app.
+
+### Or scan to open on a phone
+
+<img src="qr-code.png" alt="QR code to open Pet Health Tracker" width="200" />
+
+Send people this QR image (or the link). Scanning it opens the app, and a built-in **Install** button / prompt walks them through adding it to the home screen.
+
 ---
 
 ## 📲 Install it like a normal app (recommended)

@@ -3,7 +3,7 @@
  * RELEASE PROCESS: bump CACHE (e.g. v1.0.1) whenever any app file changes,
  * and bump the version shown in dog-health-tracker.html to match.
  */
-const CACHE = "pht-cache-v1.0.0";
+const CACHE = "pht-cache-v1.0.1";
 const ASSETS = [
   "./",
   "./index.html",

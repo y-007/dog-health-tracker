@@ -168,6 +168,10 @@
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
   .update-bar{position:fixed;left:0;right:0;bottom:0;z-index:66;background:var(--teal);color:#fff;display:none;align-items:center;justify-content:center;gap:14px;padding:13px;font-weight:600;box-shadow:0 -2px 12px rgba(0,0,0,.25)}
   .update-bar.show{display:flex}
+  .install-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--teal);color:#fff;border-radius:12px;padding:12px 14px;margin-bottom:16px;font-weight:600;font-size:14px}
+  .install-bar .ib-actions{display:flex;align-items:center;gap:6px;flex:none}
+  .install-bar button{background:#fff;color:var(--teal);border:none;border-radius:8px;padding:8px 14px;font-weight:700;cursor:pointer}
+  .install-bar .ib-x{background:transparent;color:#fff;padding:6px 8px;font-size:16px}
   .update-bar button{background:#fff;color:var(--teal);border:none;border-radius:8px;padding:8px 18px;font-weight:700;cursor:pointer}
   .rangebtns{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
   .rangebtns button{flex:1;min-width:60px;padding:8px;border-radius:9px;border:1.5px solid var(--line);background:#fff;font-size:13px;font-weight:600;cursor:pointer;color:var(--ink)}
@@ -250,6 +254,11 @@
 </header>
 
 <main>
+  <div class="install-bar" id="installBar" style="display:none">
+    <span id="installMsg">📲 Install Pet Health Tracker on your device</span>
+    <span class="ib-actions"><button id="installBtn" onclick="doInstall()">Install</button><button class="ib-x" onclick="dismissInstall()" aria-label="Dismiss">✕</button></span>
+  </div>
+
   <!-- ========= MEDICATION ========= -->
   <section id="view-med" class="view active">
     <div class="card">
@@ -412,7 +421,7 @@
       <div style="height:10px"></div>
       <button class="btn ghost row2" onclick="document.getElementById('importInput').click()">⬆️ Import backup</button>
       <input type="file" id="importInput" accept="application/json,.json" style="display:none" />
-      <div class="muted" style="margin-top:14px;text-align:center">🐾 Pet Health Tracker · v1.0.0 · your data stays on this device</div>
+      <div class="muted" style="margin-top:14px;text-align:center">🐾 Pet Health Tracker · v1.0.1 · your data stays on this device</div>
     </div>
   </section>
 
@@ -1162,6 +1171,35 @@ document.querySelector('#sympChips .chip[data-c="Diarrhea"]').classList.add("sel
   loadVetInfo();await loadAvatar();loadReminderForm();
   renderMeds();renderPresets();renderNames();renderCoughs();renderSymps();renderVisits();renderInventory();
   checkReminders();setInterval(checkReminders,30000);
+})();
+
+/* ---------- PWA: install prompt ---------- */
+let deferredPrompt=null;
+function installEl(){return document.getElementById("installBar")}
+function isStandalone(){return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone===true}
+function installDismissed(){try{return localStorage.getItem("dht_install_dismissed")==="1"}catch(e){return false}}
+function dismissInstall(){installEl().style.display="none";try{localStorage.setItem("dht_install_dismissed","1")}catch(e){}}
+function doInstall(){
+  if(!deferredPrompt)return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.finally(()=>{deferredPrompt=null;installEl().style.display="none";});
+}
+window.addEventListener("beforeinstallprompt",e=>{
+  e.preventDefault();deferredPrompt=e;
+  if(isStandalone()||installDismissed())return;
+  document.getElementById("installBtn").style.display="";
+  document.getElementById("installMsg").textContent="📲 Install Pet Health Tracker on your device";
+  installEl().style.display="flex";
+});
+window.addEventListener("appinstalled",()=>{installEl().style.display="none";deferredPrompt=null;});
+/* iOS Safari has no install prompt — show the manual steps instead */
+(function(){
+  if(isStandalone()||installDismissed())return;
+  if(/iphone|ipad|ipod/i.test(navigator.userAgent||"")){
+    document.getElementById("installBtn").style.display="none";
+    document.getElementById("installMsg").innerHTML="📲 To install: tap <b>Share</b>, then <b>Add to Home Screen</b>";
+    installEl().style.display="flex";
+  }
 })();
 
 /* ---------- PWA: offline install + update notifications ---------- */
