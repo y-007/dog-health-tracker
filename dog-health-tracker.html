@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="theme-color" content="#2f6f6b" />
+<title>Dog Health Tracker</title>
+<style>
+  :root{
+    --bg:#f4f6f5; --card:#ffffff; --ink:#1f2a2a; --muted:#6b7a78;
+    --teal:#2f6f6b; --teal-d:#245854; --line:#e2e8e6;
+    --med:#3b82c4; --med-bg:#eaf2fb;
+    --cough:#c4683b; --cough-bg:#fbefe9;
+    --symp:#8a5cc4; --symp-bg:#f1ebfa;
+    --vet:#2e7d5b; --vet-bg:#e8f5ee;
+    --danger:#c0392b;
+    --shadow:0 1px 3px rgba(0,0,0,.08),0 6px 18px rgba(0,0,0,.05);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg); color:var(--ink); font-size:16px; line-height:1.45; padding-bottom:84px;
+  }
+  header{
+    background:var(--teal); color:#fff; padding:12px 16px; position:sticky; top:0; z-index:20;
+    box-shadow:0 2px 8px rgba(0,0,0,.12);
+  }
+  header .row{display:flex;align-items:center;gap:12px}
+  #avatar{
+    width:44px;height:44px;border-radius:50%;flex:none;background:rgba(255,255,255,.2) center/cover no-repeat;
+    border:2px solid rgba(255,255,255,.6);display:flex;align-items:center;justify-content:center;
+    font-size:22px;cursor:pointer;overflow:hidden;
+  }
+  header .hdr-txt{flex:1;min-width:0}
+  header h1{font-size:13px;margin:0;font-weight:500;opacity:.85;letter-spacing:.02em}
+  #petSelect{
+    background:transparent;border:none;color:#fff;font-size:19px;font-weight:650;padding:0;max-width:46vw;
+    -webkit-appearance:none;appearance:none;cursor:pointer;
+  }
+  #petSelect:focus{outline:none}
+  #petSelect option{color:#111}
+  #themeBtn,#petManage{
+    flex:none;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.35);color:#fff;
+    border-radius:9px;width:38px;height:38px;font-size:17px;cursor:pointer;
+  }
+  .pet-row{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--line)}
+  .pet-nm{font-weight:600}
+  .pet-active{font-size:10px;color:var(--vet);font-weight:700;text-transform:uppercase;margin-left:6px}
+  .pet-acts button{background:none;border:1px solid var(--line);border-radius:8px;padding:6px 10px;margin-left:6px;font-size:13px;cursor:pointer;color:var(--teal)}
+  .pet-acts button.del{color:var(--danger);border-color:#f0c9c4}
+  .amt-chips{display:flex;gap:6px;margin:-6px 0 14px;flex-wrap:wrap}
+  .amt-chips button{padding:6px 13px;border:1.5px solid var(--line);border-radius:999px;background:#fff;font-weight:600;font-size:14px;cursor:pointer;color:var(--ink)}
+  main{max-width:760px;margin:0 auto;padding:16px}
+  .view{display:none}
+  .view.active{display:block}
+  .card{
+    background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px;
+    box-shadow:var(--shadow); margin-bottom:16px;
+  }
+  h2{font-size:16px;margin:0 0 12px;font-weight:650}
+  h2 .sm{font-size:12px;font-weight:500;color:var(--muted)}
+  label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin:0 0 5px}
+  input,select,textarea,button{font-family:inherit;font-size:16px}
+  input[type=text],input[type=number],input[type=tel],input[type=datetime-local],input[type=date],select,textarea{
+    width:100%; padding:11px 12px; border:1px solid var(--line); border-radius:10px; background:#fff;
+    color:var(--ink); margin-bottom:14px;
+  }
+  textarea{min-height:60px;resize:vertical}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(47,111,107,.15)}
+  .field-row{display:flex;gap:10px}
+  .field-row>div{flex:1}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+  .chip{
+    border:1.5px solid var(--line); background:#fff; color:var(--ink); padding:9px 13px; border-radius:999px;
+    cursor:pointer; font-size:14px; font-weight:600;
+  }
+  .chip.sel.cough{background:var(--cough-bg);border-color:var(--cough);color:var(--cough)}
+  .chip.sel.symp{background:var(--symp-bg);border-color:var(--symp);color:var(--symp)}
+  .btn{width:100%;padding:13px;border:none;border-radius:11px;color:#fff;background:var(--teal);font-weight:650;cursor:pointer}
+  .btn:active{filter:brightness(.92)}
+  .btn.cough{background:var(--cough)} .btn.symp{background:var(--symp)} .btn.vet{background:var(--vet)}
+  .btn.ghost{background:#fff;color:var(--teal);border:1.5px solid var(--teal)}
+  .btn.row2{display:flex;align-items:center;justify-content:center;gap:8px}
+  .quick{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+  .quick button{
+    flex:1;min-width:130px;padding:11px;border-radius:10px;border:1.5px dashed var(--line);background:#fafbfb;
+    color:var(--ink);font-size:13px;font-weight:600;cursor:pointer;text-align:left;
+  }
+  .quick button b{display:block;color:var(--teal)}
+  .photo-btn{
+    width:100%;padding:11px;border:1.5px dashed var(--line);border-radius:10px;background:#fafbfb;
+    color:var(--muted);font-weight:600;cursor:pointer;margin-bottom:14px;
+  }
+  .photo-prev{position:relative;margin-bottom:14px;display:none}
+  .photo-prev img{width:100%;max-height:230px;object-fit:cover;border-radius:10px;border:1px solid var(--line)}
+  .photo-prev .rm{
+    position:absolute;top:8px;right:8px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:999px;
+    width:30px;height:30px;font-size:16px;cursor:pointer;
+  }
+  /* entries */
+  .entry{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--line)}
+  .entry:first-child{border-top:none}
+  .badge{flex:none;width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px;overflow:hidden}
+  .badge.med{background:var(--med-bg)} .badge.cough{background:var(--cough-bg)}
+  .badge.symp{background:var(--symp-bg)} .badge.vet{background:var(--vet-bg)}
+  .badge img{width:100%;height:100%;object-fit:cover}
+  .entry .body{flex:1;min-width:0}
+  .entry .ttl{font-weight:650;font-size:15px}
+  .entry .sub{font-size:13px;color:var(--muted)}
+  .entry .when{font-size:12px;color:var(--muted);margin-top:2px}
+  .entry .thumb{margin-top:8px;width:84px;height:84px;object-fit:cover;border-radius:8px;border:1px solid var(--line);cursor:pointer;display:none}
+  .entry .acts{flex:none;display:flex;flex-direction:column;gap:2px}
+  .entry .acts button{background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:4px 6px;line-height:1}
+  .daygroup h3{font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:18px 0 4px;font-weight:700}
+  .empty{text-align:center;color:var(--muted);padding:30px 10px;font-size:14px}
+  .empty .big{font-size:34px;display:block;margin-bottom:8px}
+  /* stats */
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(78px,1fr));gap:10px;margin-bottom:6px}
+  .stat{background:#fafbfb;border:1px solid var(--line);border-radius:12px;padding:12px 8px;text-align:center}
+  .stat .n{font-size:23px;font-weight:750;color:var(--teal)}
+  .stat .l{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.02em}
+  /* horizontal breakdown bars */
+  .bar-row{margin:10px 0}
+  .bar-row .top{display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px}
+  .bar{height:10px;border-radius:6px;background:#eef2f1;overflow:hidden}
+  .bar>span{display:block;height:100%;background:var(--cough);border-radius:6px}
+  /* daily column chart */
+  .chart{margin-top:8px}
+  .chart .plot{display:flex;align-items:flex-end;gap:3px;height:130px;border-bottom:2px solid var(--line);padding-top:6px}
+  .chart .col{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;min-width:0}
+  .chart .col .v{font-size:9px;color:var(--muted);margin-bottom:2px;height:11px}
+  .chart .col .fill{width:100%;max-width:26px;background:var(--cough);border-radius:4px 4px 0 0;min-height:2px;transition:height .2s}
+  .chart .col .fill.zero{background:#e7ecea}
+  .chart .xax{display:flex;gap:3px;margin-top:4px}
+  .chart .xax .lbl{flex:1;text-align:center;font-size:9px;color:var(--muted);white-space:nowrap;overflow:hidden}
+  .legend{font-size:12px;color:var(--muted);margin-top:8px}
+  .report-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+  .report-table th,.report-table td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+  .report-table th{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.03em}
+  .report-table .t-med{color:var(--med);font-weight:700}
+  .report-table .t-cough{color:var(--cough);font-weight:700}
+  .report-table .t-symp{color:var(--symp);font-weight:700}
+  .report-table img.rthumb{width:54px;height:54px;object-fit:cover;border-radius:6px;border:1px solid var(--line);margin-top:4px}
+  .muted{color:var(--muted);font-size:13px}
+  /* nav */
+  nav{
+    position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);display:flex;
+    z-index:30;box-shadow:0 -2px 10px rgba(0,0,0,.05);padding-bottom:env(safe-area-inset-bottom);
+  }
+  nav button{
+    flex:1;background:none;border:none;padding:8px 2px 10px;color:var(--muted);font-size:10.5px;font-weight:600;
+    cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;
+  }
+  nav button .ic{font-size:20px;line-height:1}
+  nav button.active{color:var(--teal)}
+  .toast{
+    position:fixed;left:50%;bottom:92px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;
+    padding:11px 18px;border-radius:999px;font-size:14px;font-weight:600;opacity:0;pointer-events:none;
+    transition:.25s;z-index:60;box-shadow:var(--shadow);white-space:nowrap;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .rangebtns{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+  .rangebtns button{flex:1;min-width:60px;padding:8px;border-radius:9px;border:1.5px solid var(--line);background:#fff;font-size:13px;font-weight:600;cursor:pointer;color:var(--ink)}
+  .rangebtns button.sel{background:var(--teal);color:#fff;border-color:var(--teal)}
+  /* weekly grid + reminders */
+  .chk{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:600;color:var(--ink);margin-bottom:14px}
+  .chk input{width:20px;height:20px}
+  .due-banner{background:#fff7e6;border:1px solid #e0a73c;color:#8a5a13;border-radius:10px;padding:10px 12px;font-weight:600;font-size:14px;margin-bottom:12px}
+  .wg-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .weekgrid{width:100%;border-collapse:collapse;table-layout:fixed;min-width:300px}
+  .weekgrid th,.weekgrid td{border:1px solid var(--line);text-align:center;padding:0}
+  .weekgrid thead th{font-size:10px;color:var(--muted);font-weight:600;padding:4px 1px;line-height:1.15;background:#fafbfb}
+  .weekgrid thead th.today{color:#fff;background:var(--teal)}
+  .weekgrid .rowlbl{font-size:11px;font-weight:700;color:var(--muted);width:32px;background:#fafbfb}
+  .weekgrid td.cell{height:48px;cursor:pointer;font-size:19px;vertical-align:middle}
+  .weekgrid td.cell .tm{display:block;font-size:8px;color:var(--muted);line-height:1;margin-top:1px}
+  .weekgrid td.taken{background:var(--vet-bg)}
+  .weekgrid td.missed{background:#fbecea}
+  .weekgrid td.due{background:#fff7e6;box-shadow:inset 0 0 0 2px #e0a73c}
+  .weekgrid td.future{background:#fff;cursor:default;color:#cdd6d4}
+  /* modal */
+  .modal-back{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:70;display:none;align-items:flex-end;justify-content:center;padding:0}
+  .modal-back.show{display:flex}
+  .modal{background:#fff;width:100%;max-width:560px;max-height:92vh;overflow:auto;border-radius:18px 18px 0 0;padding:18px 16px 24px}
+  @media(min-width:560px){.modal-back{align-items:center}.modal{border-radius:18px}}
+  .modal-actions{display:flex;gap:10px;margin-top:6px}
+  .modal-actions .btn{flex:1}
+  .viewer{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:80;display:none;align-items:center;justify-content:center;padding:16px}
+  .viewer.show{display:flex}
+  .viewer img{max-width:100%;max-height:100%;border-radius:8px}
+  .viewer .close{position:absolute;top:14px;right:16px;background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:999px;width:40px;height:40px;font-size:20px;cursor:pointer}
+  .printhead{display:none}
+  /* dark mode — calmer evening palette */
+  body.dark{
+    --bg:#13191a; --card:#1d2527; --ink:#e6edec; --muted:#94a6a3; --line:#2d3739;
+    --med-bg:#15303f; --cough-bg:#3a2618; --symp-bg:#28203f; --vet-bg:#15301f;
+    --shadow:0 1px 3px rgba(0,0,0,.5),0 6px 18px rgba(0,0,0,.35);
+  }
+  body.dark input[type=text],body.dark input[type=number],body.dark input[type=tel],
+  body.dark input[type=datetime-local],body.dark input[type=date],body.dark input[type=time],
+  body.dark select,body.dark textarea{background:#232d2f;color:var(--ink);border-color:var(--line)}
+  body.dark .chip,body.dark .amt-chips button,body.dark .rangebtns button,
+  body.dark .stat,body.dark .quick button,body.dark .photo-btn,body.dark .pet-acts button{background:#232d2f;color:var(--ink)}
+  body.dark .quick button b{color:#7fd0c9}
+  body.dark nav,body.dark .modal{background:#1d2527}
+  body.dark .bar,body.dark .chart .col .fill.zero{background:#2d3739}
+  body.dark .weekgrid thead th,body.dark .weekgrid .rowlbl{background:#232d2f}
+  body.dark .weekgrid td.taken{background:#15301f}
+  body.dark .weekgrid td.missed{background:#3a2320}
+  body.dark .weekgrid td.due,body.dark .due-banner{background:#33280f;color:#f1cf94;border-color:#7a5f23}
+  body.dark .weekgrid td.future{background:#1d2527;color:#3c4b49}
+  body.dark .btn.ghost{background:#1d2527}
+  body.dark .pet-acts button.del{border-color:#5a2e2a}
+  @media print{
+    header,nav,.no-print,.toast{display:none!important}
+    body{background:#fff;padding:0;font-size:12px}
+    main{max-width:100%;padding:0}
+    .card{box-shadow:none;border:none;padding:0;margin-bottom:14px;page-break-inside:avoid}
+    .printhead{display:flex;align-items:center;gap:12px;margin-bottom:14px;border-bottom:2px solid #000;padding-bottom:8px}
+    .printhead img{width:54px;height:54px;border-radius:50%;object-fit:cover}
+    .printhead h1{margin:0;font-size:20px}
+    .stat{border:1px solid #ccc}
+    .report-table th,.report-table td{border-bottom:1px solid #ccc}
+    .chart .plot{border-color:#999}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="row">
+    <div id="avatar" onclick="document.getElementById('avatarInput').click()">🐶</div>
+    <input type="file" id="avatarInput" accept="image/*" style="display:none" />
+    <div class="hdr-txt">
+      <h1>🐾 Pet Health Tracker</h1>
+      <select id="petSelect" onchange="onPetSelect(this.value)" aria-label="Select pet"></select>
+    </div>
+    <button id="themeBtn" onclick="toggleTheme()" aria-label="Toggle dark mode" title="Dark mode">🌙</button>
+    <button id="petManage" onclick="openPetManager()" aria-label="Manage pets" title="Manage pets">⚙︎</button>
+  </div>
+</header>
+
+<main>
+  <!-- ========= MEDICATION ========= -->
+  <section id="view-med" class="view active">
+    <div class="card">
+      <h2>📅 This week at a glance</h2>
+      <div id="dueBanner" class="due-banner" style="display:none"></div>
+      <div class="wg-wrap"><table class="weekgrid" id="weekGrid"></table></div>
+      <div class="legend">✅ taken · ⏰ due · ⭕ missed · tap a cell to mark taken / undo</div>
+    </div>
+
+    <div class="card">
+      <h2>⏰ Medication reminders <span class="sm">AM &amp; PM</span></h2>
+      <label class="chk"><input type="checkbox" id="remEnabled" /> Enable AM/PM reminders</label>
+      <label for="remName">Medication</label>
+      <input id="remName" type="text" list="medNames" placeholder="e.g. Vetmedin" autocomplete="off" />
+      <label>Dose given each time</label>
+      <div class="field-row">
+        <div style="flex:0 0 40%"><input id="remAmount" type="number" step="0.25" min="0" inputmode="decimal" placeholder="Amount" /></div>
+        <div><select id="remForm"></select></div>
+      </div>
+      <div class="field-row">
+        <div><label for="remAm">AM time</label><input id="remAm" type="time" value="08:00" /></div>
+        <div><label for="remPm">PM time</label><input id="remPm" type="time" value="20:00" /></div>
+      </div>
+      <div class="muted" style="margin:-6px 0 12px">Marking a dose taken in the grid above subtracts this from inventory (match the name &amp; form to an inventory item).</div>
+      <button class="btn" onclick="saveReminder()">Save reminders</button>
+      <div style="height:10px"></div>
+      <button class="btn ghost" onclick="reqNotif()">🔔 Enable notifications</button>
+      <div class="muted" id="notifStatus" style="margin-top:8px"></div>
+      <div class="muted" style="margin-top:6px">Alerts fire while this app is open in your browser. Add it to your home screen and keep it open for reliable reminders.</div>
+    </div>
+
+    <div class="card">
+      <h2>💊 Log medication</h2>
+      <div id="medPresets"></div>
+      <label for="mName">Medication name</label>
+      <input id="mName" type="text" list="medNames" placeholder="e.g. Vetmedin" autocomplete="off" />
+      <datalist id="medNames"></datalist>
+      <label>Dosage</label>
+      <div class="field-row">
+        <div style="flex:0 0 40%"><input id="mAmount" type="number" step="0.25" min="0" inputmode="decimal" placeholder="Amount" autocomplete="off" /></div>
+        <div><select id="mForm"></select></div>
+      </div>
+      <div class="amt-chips">
+        <button type="button" onclick="setAmt('0.25')">¼</button>
+        <button type="button" onclick="setAmt('0.5')">½</button>
+        <button type="button" onclick="setAmt('1')">1</button>
+        <button type="button" onclick="setAmt('1.5')">1½</button>
+        <button type="button" onclick="setAmt('2')">2</button>
+      </div>
+      <label for="mTime">Date &amp; time</label><input id="mTime" type="datetime-local" />
+      <label for="mNote">Notes (optional)</label>
+      <input id="mNote" type="text" placeholder="e.g. with food" autocomplete="off" />
+      <button class="btn" onclick="saveMed()">Save medication</button>
+    </div>
+    <div class="card"><h2>Recent medications</h2><div id="medList"></div></div>
+
+    <div class="card">
+      <h2>📦 Medication inventory <span class="sm">auto-counts doses</span></h2>
+      <div id="invBanner" class="due-banner" style="display:none"></div>
+      <div class="field-row">
+        <div><label for="invName">Medication</label><input id="invName" type="text" list="medNames" placeholder="e.g. Vetmedin" autocomplete="off" /></div>
+        <div><label for="invForm">Form</label><select id="invForm"></select></div>
+      </div>
+      <div class="field-row">
+        <div><label for="invCount">Current stock</label><input id="invCount" type="number" step="0.25" min="0" inputmode="decimal" placeholder="e.g. 60" /></div>
+        <div><label for="invLow">Alert when below</label><input id="invLow" type="number" step="0.25" min="0" inputmode="decimal" placeholder="e.g. 10" /></div>
+      </div>
+      <button class="btn" onclick="addInvItem()">Add to inventory</button>
+      <div style="height:14px"></div>
+      <div id="invList"></div>
+    </div>
+  </section>
+
+  <!-- ========= COUGH ========= -->
+  <section id="view-cough" class="view">
+    <div class="card">
+      <h2>😮‍💨 Log a cough</h2>
+      <div class="quick"><button onclick="quickCough()"><b>Log now ⏱</b>Record a cough at the current time</button></div>
+      <label>Condition when it happened</label>
+      <div class="chips" id="condChips">
+        <div class="chip cough" data-c="Sleeping/Resting">😴 Sleeping / Resting</div>
+        <div class="chip cough" data-c="Excitement">🤩 Excitement</div>
+        <div class="chip cough" data-c="Activity/Exercise">🏃 Activity / Exercise</div>
+        <div class="chip cough" data-c="Eating/Drinking">🍖 Eating / Drinking</div>
+        <div class="chip cough" data-c="Other">❓ Other</div>
+      </div>
+      <div class="field-row">
+        <div><label for="cTime">Date &amp; time</label><input id="cTime" type="datetime-local" /></div>
+        <div><label for="cSeverity">Severity</label>
+          <select id="cSeverity"><option>Mild</option><option selected>Moderate</option><option>Severe</option></select>
+        </div>
+      </div>
+      <label for="cNote">Notes (optional)</label>
+      <input id="cNote" type="text" placeholder="e.g. lasted ~20 sec, dry cough" autocomplete="off" />
+      <button class="btn cough" onclick="saveCough()">Save cough</button>
+    </div>
+    <div class="card"><h2>Recent coughs</h2><div id="coughList"></div></div>
+  </section>
+
+  <!-- ========= SYMPTOM ========= -->
+  <section id="view-symp" class="view">
+    <div class="card">
+      <h2>🩺 Log a symptom <span class="sm">with photo</span></h2>
+      <label>Type</label>
+      <div class="chips" id="sympChips">
+        <div class="chip symp" data-c="Diarrhea">💩 Diarrhea</div>
+        <div class="chip symp" data-c="Loose stool">🟤 Loose stool</div>
+        <div class="chip symp" data-c="Vomiting">🤮 Vomiting</div>
+        <div class="chip symp" data-c="Injury">🩹 Injury</div>
+        <div class="chip symp" data-c="Skin/Rash">🔴 Skin / Rash</div>
+        <div class="chip symp" data-c="Appetite">🍽 Appetite</div>
+        <div class="chip symp" data-c="Other">❓ Other</div>
+      </div>
+      <div class="field-row">
+        <div><label for="sTime">Date &amp; time</label><input id="sTime" type="datetime-local" /></div>
+        <div><label for="sSeverity">Severity</label>
+          <select id="sSeverity"><option>Mild</option><option selected>Moderate</option><option>Severe</option></select>
+        </div>
+      </div>
+      <button type="button" class="photo-btn" onclick="document.getElementById('sPhotoInput').click()">📷 Add photo</button>
+      <input type="file" id="sPhotoInput" accept="image/*" capture="environment" style="display:none" />
+      <div class="photo-prev" id="sPhotoPrev"><img id="sPhotoImg" alt="preview"/><button type="button" class="rm" onclick="clearAddPhoto()">✕</button></div>
+      <label for="sNote">Notes (optional)</label>
+      <input id="sNote" type="text" placeholder="e.g. 2nd time today, watery" autocomplete="off" />
+      <button class="btn symp" onclick="saveSymptom()">Save symptom</button>
+    </div>
+    <div class="card"><h2>Recent symptoms</h2><div id="sympList"></div></div>
+  </section>
+
+  <!-- ========= VET ========= -->
+  <section id="view-vet" class="view">
+    <div class="card">
+      <h2>🏥 Vet / clinic info</h2>
+      <label for="vClinic">Clinic name</label><input id="vClinic" type="text" placeholder="e.g. Maple Animal Hospital" />
+      <label for="vDoctor">Doctor's name</label><input id="vDoctor" type="text" placeholder="e.g. Dr. Smith" />
+      <div class="field-row">
+        <div><label for="vPhone">Phone</label><input id="vPhone" type="tel" placeholder="(555) 123-4567" /></div>
+      </div>
+      <label for="vAddr">Address</label><textarea id="vAddr" placeholder="Street, city, ZIP"></textarea>
+      <button class="btn vet" onclick="saveVetInfo()">Save vet info</button>
+    </div>
+
+    <div class="card">
+      <h2>🧾 Log a visit</h2>
+      <div class="field-row">
+        <div><label for="viDate">Date</label><input id="viDate" type="date" /></div>
+        <div><label for="viPrice">Price paid</label><input id="viPrice" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00" /></div>
+      </div>
+      <label for="viReason">Reason for visit</label><input id="viReason" type="text" placeholder="e.g. annual checkup, cough" />
+      <label for="viDiag">Diagnosis / treatment</label><textarea id="viDiag" placeholder="What the vet found / prescribed"></textarea>
+      <button class="btn vet" onclick="saveVisit()">Save visit</button>
+    </div>
+
+    <div class="card"><h2>Visit history <span class="sm" id="visitTotal"></span></h2><div id="visitList"></div></div>
+
+    <div class="card no-print">
+      <h2>💾 Backup &amp; data</h2>
+      <p class="muted" style="margin-top:0">Your data lives only on this device. Export a backup file regularly (it includes photos) so you don't lose your history.</p>
+      <button class="btn ghost row2" onclick="exportData()">⬇️ Export backup</button>
+      <div style="height:10px"></div>
+      <button class="btn ghost row2" onclick="document.getElementById('importInput').click()">⬆️ Import backup</button>
+      <input type="file" id="importInput" accept="application/json,.json" style="display:none" />
+    </div>
+  </section>
+
+  <!-- ========= REPORT ========= -->
+  <section id="view-report" class="view">
+    <div class="card no-print">
+      <h2>📋 Vet report</h2>
+      <div class="rangebtns" id="rangeBtns">
+        <button data-r="7">7 days</button><button data-r="14">14 days</button>
+        <button data-r="30" class="sel">30 days</button><button data-r="90">90 days</button><button data-r="all">All</button>
+      </div>
+      <div class="field-row">
+        <div><label for="rFrom">From</label><input id="rFrom" type="date" /></div>
+        <div><label for="rTo">To</label><input id="rTo" type="date" /></div>
+      </div>
+      <button class="btn ghost no-print" onclick="window.print()">🖨 Print / Save as PDF</button>
+    </div>
+    <div id="reportOut"></div>
+  </section>
+</main>
+
+<nav>
+  <button class="active" data-v="med" onclick="show('med')"><span class="ic">💊</span>Meds</button>
+  <button data-v="cough" onclick="show('cough')"><span class="ic">😮‍💨</span>Cough</button>
+  <button data-v="symp" onclick="show('symp')"><span class="ic">🩺</span>Symptom</button>
+  <button data-v="report" onclick="show('report')"><span class="ic">📋</span>Report</button>
+  <button data-v="vet" onclick="show('vet')"><span class="ic">🏥</span>Vet</button>
+</nav>
+
+<div class="toast" id="toast"></div>
+<div class="modal-back" id="modal"><div class="modal" id="modalBody"></div></div>
+<div class="viewer" id="viewer" onclick="closeViewer()"><button class="close">✕</button><img id="viewerImg" alt="full"/></div>
+
+<script>
+"use strict";
+const LS_MED="dht_meds_v1", LS_COUGH="dht_coughs_v1", LS_SYMP="dht_symps_v1",
+      LS_VISIT="dht_visits_v1", LS_VET="dht_vet_v1", LS_NAME="dht_dogname_v1",
+      LS_REMINDER="dht_reminder_v1", LS_INV="dht_inv_v1",
+      LS_PETS="dht_pets_v1", LS_ACTIVE="dht_active_v1", LS_THEME="dht_theme_v1";
+const PER_PET=[LS_MED,LS_COUGH,LS_SYMP,LS_VISIT,LS_VET,LS_REMINDER,LS_INV];
+
+/* ---------- localStorage ---------- */
+const load=key=>{try{return JSON.parse(localStorage.getItem(key))||[]}catch(e){return[]}};
+const loadObj=key=>{try{return JSON.parse(localStorage.getItem(key))||{}}catch(e){return{}}};
+const save=(key,v)=>localStorage.setItem(key,JSON.stringify(v));
+
+/* ---------- multi-pet state ---------- */
+let pets=[], activeId=null;
+let meds=[], coughs=[], symps=[], visits=[], vet={}, cfg={}, inv=[];
+function pk(base){return base+"_"+activeId}           // active-pet storage key
+function loadPetData(){
+  meds=load(pk(LS_MED)); coughs=load(pk(LS_COUGH)); symps=load(pk(LS_SYMP));
+  visits=load(pk(LS_VISIT)); vet=loadObj(pk(LS_VET)); cfg=loadObj(pk(LS_REMINDER));
+  inv=load(pk(LS_INV));
+}
+function currentPet(){return pets.find(p=>p.id===activeId)||pets[0]||{name:""}}
+function petName(){return (currentPet().name||"").trim()}
+function avatarKey(){return "pet_avatar_"+activeId}
+
+/* ---------- dosage forms / units ---------- */
+const FORMS=[
+  {v:"Tablet",unit:"tablet",count:true},
+  {v:"Capsule",unit:"capsule",count:true},
+  {v:"Chewable",unit:"chew",count:true},
+  {v:"Liquid (mL)",unit:"mL"},
+  {v:"Drops",unit:"drop",count:true},
+  {v:"Syringe (mL)",unit:"mL"},
+  {v:"Injection (mL)",unit:"mL"},
+  {v:"Sachet/Powder",unit:"sachet",count:true},
+  {v:"Spray",unit:"spray",count:true},
+  {v:"Other",unit:""}
+];
+function formInfo(v){return FORMS.find(f=>f.v===v)||{v:v,unit:"",count:false}}
+function formOptionsHtml(sel){return FORMS.map(f=>'<option value="'+esc(f.v)+'"'+(f.v===sel?" selected":"")+'>'+esc(f.v)+'</option>').join("")}
+function doseString(amount,form){
+  const fi=formInfo(form), n=parseFloat(amount);
+  let unit=fi.unit||"";
+  if(fi.count && !isNaN(n) && n>1 && unit) unit+="s";
+  if(amount==="" || isNaN(n)) return form||"";          // no amount → just the form name
+  return amount + (unit? " "+unit : (form&&form!=="Other"?" "+form:""));
+}
+
+/* ---------- pet management ---------- */
+function renderPetSelect(){
+  const s=document.getElementById("petSelect"); if(!s)return; s.innerHTML="";
+  pets.forEach(p=>{const o=document.createElement("option");o.value=p.id;o.textContent=p.name||"(unnamed)";if(p.id===activeId)o.selected=true;s.appendChild(o)});
+  const a=document.createElement("option");a.value="__add";a.textContent="＋ Add pet…";s.appendChild(a);
+}
+function onPetSelect(v){if(v==="__add"){renderPetSelect();addPet();}else switchPet(v)}
+function switchPet(id){if(id===activeId)return;activeId=id;localStorage.setItem(LS_ACTIVE,id);loadPetData();refreshAll();toast("🐾 "+petName())}
+function refreshAll(){
+  renderPetSelect();loadAvatar();loadVetInfo();loadReminderForm();
+  renderMeds();renderPresets();renderNames();renderCoughs();renderSymps();renderVisits();renderInventory();
+  if(document.getElementById("view-report").classList.contains("active"))renderReport();
+}
+function addPet(){
+  const name=(prompt("New pet's name:")||"").trim(); if(!name)return;
+  const id=uid(); pets.push({id,name}); save(LS_PETS,pets); switchPet(id); toast("🐾 "+name+" added");
+}
+function openPetManager(){
+  const rows=pets.map(p=>'<div class="pet-row"><span class="pet-nm">'+esc(p.name||"(unnamed)")+
+    (p.id===activeId?' <span class="pet-active">active</span>':"")+'</span><span class="pet-acts">'+
+    '<button onclick="renamePet(\''+p.id+'\')">Rename</button>'+
+    (pets.length>1?'<button class="del" onclick="removePet(\''+p.id+'\')">Delete</button>':"")+'</span></div>').join("");
+  openModal('<h2>Manage pets</h2>'+rows+'<div style="height:10px"></div>'+
+    '<button class="btn" onclick="closeModal();addPet()">＋ Add a pet</button>'+
+    '<div class="modal-actions"><button class="btn ghost" onclick="closeModal()">Close</button></div>');
+}
+function renamePet(id){const p=pets.find(x=>x.id===id);if(!p)return;
+  const name=(prompt("Rename pet:",p.name||"")||"").trim();if(!name)return;
+  p.name=name;save(LS_PETS,pets);renderPetSelect();openPetManager();toast("✓ Renamed");}
+async function removePet(id){
+  if(pets.length<=1)return toast("You need at least one pet");
+  const p=pets.find(x=>x.id===id);if(!p)return;
+  if(!confirm('Delete "'+(p.name||"this pet")+'" and ALL its records? This cannot be undone.'))return;
+  for(const s of load(LS_SYMP+"_"+id)){if(s.photo)await imgDel("img_"+s.photo)}
+  await imgDel("pet_avatar_"+id);
+  PER_PET.forEach(b=>localStorage.removeItem(b+"_"+id));
+  pets=pets.filter(x=>x.id!==id);save(LS_PETS,pets);
+  if(activeId===id){activeId=pets[0].id;localStorage.setItem(LS_ACTIVE,activeId);loadPetData()}
+  closeModal();refreshAll();toast("Pet deleted");
+}
+/* migrate older single-pet data into a first pet, or create a default */
+function migrateKey(base,id){const v=localStorage.getItem(base);if(v!==null){localStorage.setItem(base+"_"+id,v);localStorage.removeItem(base)}}
+async function initPets(){
+  pets=load(LS_PETS);
+  if(!pets.length){
+    const id=uid(), oldName=(localStorage.getItem(LS_NAME)||"").trim();
+    pets=[{id,name:oldName||"My pet"}]; save(LS_PETS,pets);
+    PER_PET.forEach(b=>migrateKey(b,id)); localStorage.removeItem(LS_NAME);
+    const av=await imgGet("dog_avatar"); if(av){await imgPut("pet_avatar_"+id,av);await imgDel("dog_avatar")}
+    activeId=id;
+  }else{
+    activeId=localStorage.getItem(LS_ACTIVE);
+    if(!pets.find(p=>p.id===activeId))activeId=pets[0].id;
+  }
+  localStorage.setItem(LS_ACTIVE,activeId);
+}
+
+/* ---------- IndexedDB (photos) ---------- */
+const DB_NAME="dht_db", STORE="images"; let _db=null;
+function idb(){return new Promise((res,rej)=>{
+  if(_db)return res(_db);
+  const r=indexedDB.open(DB_NAME,1);
+  r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains(STORE))r.result.createObjectStore(STORE)};
+  r.onsuccess=()=>{_db=r.result;res(_db)}; r.onerror=()=>rej(r.error);
+})}
+async function imgPut(key,val){const db=await idb();return new Promise((res,rej)=>{const tx=db.transaction(STORE,"readwrite");tx.objectStore(STORE).put(val,key);tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error)})}
+async function imgGet(key){const db=await idb();return new Promise((res,rej)=>{const tx=db.transaction(STORE,"readonly");const q=tx.objectStore(STORE).get(key);q.onsuccess=()=>res(q.result||null);q.onerror=()=>rej(q.error)})}
+async function imgDel(key){const db=await idb();return new Promise((res,rej)=>{const tx=db.transaction(STORE,"readwrite");tx.objectStore(STORE).delete(key);tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error)})}
+async function imgAll(){const db=await idb();return new Promise((res,rej)=>{const tx=db.transaction(STORE,"readonly"),st=tx.objectStore(STORE),out={};
+  const kc=st.openCursor();kc.onsuccess=e=>{const c=e.target.result;if(c){out[c.key]=c.value;c.continue()}else res(out)};kc.onerror=()=>rej(kc.error)})}
+
+/* ---------- helpers ---------- */
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const pad=n=>String(n).padStart(2,"0");
+function nowLocalInput(){const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,16)}
+function toLocalInput(iso){const d=new Date(iso);d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,16)}
+function fmtTime(iso){return new Date(iso).toLocaleTimeString([],{hour:"numeric",minute:"2-digit"})}
+function fmtDate(iso){return new Date(iso).toLocaleDateString([],{weekday:"short",month:"short",day:"numeric"})}
+function dayKey(iso){const d=new Date(iso);return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())}
+function esc(s){return (s==null?"":String(s)).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+function attr(s){return esc(s)}
+function money(n){const v=parseFloat(n);return isNaN(v)?"":v.toLocaleString(undefined,{style:"currency",currency:"USD"})}
+function toast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("show");clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("show"),1800)}
+
+/* ---------- image compression ---------- */
+function compress(file,maxDim,quality){return new Promise((res,rej)=>{
+  const img=new Image(),url=URL.createObjectURL(file);
+  img.onload=()=>{let w=img.width,h=img.height;
+    if(w>h&&w>maxDim){h=Math.round(h*maxDim/w);w=maxDim}else if(h>=w&&h>maxDim){w=Math.round(w*maxDim/h);h=maxDim}
+    const cv=document.createElement("canvas");cv.width=w;cv.height=h;cv.getContext("2d").drawImage(img,0,0,w,h);
+    URL.revokeObjectURL(url);res(cv.toDataURL("image/jpeg",quality));};
+  img.onerror=()=>{URL.revokeObjectURL(url);rej(new Error("bad image"))};img.src=url;
+})}
+async function hydratePhotos(root){
+  const els=root.querySelectorAll("img[data-photo]");
+  for(const el of els){const d=await imgGet("img_"+el.getAttribute("data-photo"));
+    if(d){el.src=d;el.style.display=""}else{el.style.display="none"}}
+}
+function openViewer(src){document.getElementById("viewerImg").src=src;document.getElementById("viewer").classList.add("show")}
+function closeViewer(){document.getElementById("viewer").classList.remove("show")}
+async function viewPhoto(id){const d=await imgGet("img_"+id);if(d)openViewer(d)}
+
+/* ---------- navigation ---------- */
+function show(v){
+  document.querySelectorAll(".view").forEach(s=>s.classList.remove("active"));
+  document.getElementById("view-"+v).classList.add("active");
+  document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active",b.dataset.v===v));
+  window.scrollTo(0,0);
+  if(v==="report")renderReport();
+}
+
+/* ---------- pet avatar ---------- */
+async function loadAvatar(){const a=document.getElementById("avatar");const d=await imgGet(avatarKey());
+  if(d){a.textContent="";a.style.backgroundImage="url("+d+")"}else{a.style.backgroundImage="";a.textContent="🐶"}}
+document.getElementById("avatarInput").addEventListener("change",async e=>{
+  const f=e.target.files[0];if(!f)return;
+  try{const d=await compress(f,400,0.8);await imgPut(avatarKey(),d);await loadAvatar();toast("📸 Photo updated")}catch(x){toast("Couldn't read image")}
+  e.target.value="";
+});
+
+/* ---------- modal ---------- */
+function openModal(html){document.getElementById("modalBody").innerHTML=html;document.getElementById("modal").classList.add("show")}
+function closeModal(){document.getElementById("modal").classList.remove("show");document.getElementById("modalBody").innerHTML="";editPhoto=null}
+
+/* ========================= MEDICATION ========================= */
+function setAmt(v){setVal("mAmount",v)}
+function saveMed(){
+  const name=val("mName"),amount=val("mAmount"),form=val("mForm"),time=val("mTime"),note=val("mNote");
+  if(!name)return toast("Enter a medication name");
+  if(!time)return toast("Pick a date & time");
+  const dose=doseString(amount,form);
+  meds.push({id:uid(),name,dose,amount,form,note,t:new Date(time).toISOString()});
+  save(pk(LS_MED),meds);
+  adjustStock(name,amount,form,-1);
+  setVal("mName","");setVal("mAmount","");setVal("mForm","Tablet");setVal("mNote","");setVal("mTime",nowLocalInput());
+  toast("💊 Medication saved");renderMeds();renderPresets();renderNames();renderInventory();
+}
+function delMed(id){meds=meds.filter(m=>m.id!==id);save(pk(LS_MED),meds);renderMeds();renderPresets();renderNames()}
+function editMed(id){const m=meds.find(x=>x.id===id);if(!m)return;
+  openModal(`<h2>Edit medication</h2>
+    <label>Medication name</label><input id="em_name" type="text" value="${attr(m.name)}">
+    <label>Dosage</label>
+    <div class="field-row">
+      <div style="flex:0 0 40%"><input id="em_amount" type="number" step="0.25" min="0" inputmode="decimal" value="${attr(m.amount||"")}" placeholder="Amount"></div>
+      <div><select id="em_form">${formOptionsHtml(m.form||"Tablet")}</select></div>
+    </div>
+    <label>Date &amp; time</label><input id="em_time" type="datetime-local" value="${toLocalInput(m.t)}">
+    <label>Notes</label><input id="em_note" type="text" value="${attr(m.note)}">
+    <div class="modal-actions"><button class="btn ghost" onclick="closeModal()">Cancel</button>
+    <button class="btn" onclick="saveEditMed('${id}')">Save changes</button></div>`);
+}
+function saveEditMed(id){const m=meds.find(x=>x.id===id);if(!m)return;
+  const name=val("em_name");if(!name)return toast("Name can't be empty");
+  m.name=name;m.amount=val("em_amount");m.form=val("em_form");m.dose=doseString(m.amount,m.form);m.note=val("em_note");
+  const t=val("em_time");if(t)m.t=new Date(t).toISOString();
+  save(pk(LS_MED),meds);closeModal();renderMeds();renderPresets();renderNames();toast("✓ Updated");
+}
+function renderMeds(){renderEntries(document.getElementById("medList"),meds,"med",editMed,delMed,"No medications logged yet.","💊");renderWeek()}
+function renderPresets(){
+  const wrap=document.getElementById("medPresets");wrap.innerHTML="";
+  const seen=new Set(),combos=[];
+  [...meds].sort((a,b)=>b.t.localeCompare(a.t)).forEach(m=>{const k=m.name+"|"+m.dose;if(!seen.has(k)&&m.name){seen.add(k);combos.push(m)}});
+  if(!combos.length)return;
+  const q=document.createElement("div");q.className="quick";
+  combos.slice(0,4).forEach(m=>{const b=document.createElement("button");
+    b.innerHTML="<b>"+esc(m.name)+(m.dose?" · "+esc(m.dose):"")+"</b>Tap to log now";
+    b.onclick=()=>{meds.push({id:uid(),name:m.name,dose:m.dose,amount:m.amount,form:m.form,note:"",t:new Date().toISOString()});save(pk(LS_MED),meds);adjustStock(m.name,m.amount,m.form,-1);toast("💊 "+m.name+" logged");renderMeds();renderPresets();renderInventory()};
+    q.appendChild(b);});
+  wrap.appendChild(q);
+}
+function renderNames(){const dl=document.getElementById("medNames");dl.innerHTML="";
+  [...new Set(meds.map(m=>m.name).filter(Boolean))].forEach(n=>{const o=document.createElement("option");o.value=n;dl.appendChild(o)})}
+
+/* ========================= WEEKLY GRID + REMINDERS ========================= */
+function medSlot(m){return m.slot || (new Date(m.t).getHours()<12 ? "am":"pm")}
+function matchRemMed(m){return cfg.medName ? (m.name||"").toLowerCase()===cfg.medName.toLowerCase() : true}
+function slotMeds(dk,slot){return meds.filter(m=>dayKey(m.t)===dk && medSlot(m)===slot && matchRemMed(m))}
+
+function renderWeek(){
+  const grid=document.getElementById("weekGrid"); if(!grid)return;
+  const today=dayKey(new Date().toISOString()), now=new Date();
+  const days=[]; for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);days.push(d)}
+  const amT=cfg.am||"08:00", pmT=cfg.pm||"20:00";
+  let head='<tr><th></th>';
+  days.forEach(d=>{const dk=dayKey(d.toISOString());
+    head+='<th class="'+(dk===today?"today":"")+'">'+d.toLocaleDateString([],{weekday:"short"})+'<br>'+d.getDate()+'</th>';});
+  head+='</tr>';
+  let dueCount=0;
+  const rowFor=(slot,lbl,time)=>{
+    let r='<tr><td class="rowlbl">'+lbl+'</td>';
+    days.forEach(d=>{const dk=dayKey(d.toISOString());
+      const taken=slotMeds(dk,slot), sched=new Date(dk+"T"+time);
+      let cls="cell",content="",tap=true;
+      if(taken.length){cls+=" taken";content='✅<span class="tm">'+fmtTime(taken[0].t)+'</span>';}
+      else if(dk>today){cls+=" future";content="·";tap=false;}
+      else if(dk===today){ if(now>=sched){cls+=" due";content="⏰";dueCount++;} else {content="·";} }
+      else {cls+=" missed";content="⭕";}
+      r+='<td class="'+cls+'"'+(tap?' data-tap="'+dk+"|"+slot+'"':"")+'>'+content+'</td>';
+    });
+    return r+'</tr>';
+  };
+  grid.innerHTML='<thead>'+head+'</thead><tbody>'+rowFor("am","AM",amT)+rowFor("pm","PM",pmT)+'</tbody>';
+  grid.querySelectorAll("[data-tap]").forEach(td=>td.onclick=()=>{const p=td.getAttribute("data-tap").split("|");toggleSlot(p[0],p[1])});
+  const banner=document.getElementById("dueBanner");
+  if(dueCount){banner.style.display="block";banner.textContent="⏰ "+dueCount+" dose"+(dueCount>1?"s":"")+" due today — tap the ⏰ cell once given.";}
+  else banner.style.display="none";
+}
+function toggleSlot(dk,slot){
+  const existing=slotMeds(dk,slot);
+  if(existing.length){
+    if(confirm("Mark "+slot.toUpperCase()+" as NOT taken? This removes the logged dose and returns it to inventory.")){
+      existing.forEach(m=>adjustStock(m.name,m.amount,m.form,+1));   // give stock back
+      meds=meds.filter(m=>!existing.includes(m));save(pk(LS_MED),meds);
+      renderMeds();renderPresets();renderNames();renderInventory();toast("Removed");
+    }
+    return;
+  }
+  const today=dayKey(new Date().toISOString());
+  const t = dk===today ? new Date().toISOString()
+          : new Date(dk+"T"+(slot==="am"?(cfg.am||"08:00"):(cfg.pm||"20:00"))).toISOString();
+  meds.push({id:uid(),name:cfg.medName||"Medication",dose:cfg.dose||"",amount:cfg.amount||"",form:cfg.form||"",slot,note:"",t});
+  save(pk(LS_MED),meds);adjustStock(cfg.medName,cfg.amount,cfg.form,-1);   // subtract from inventory
+  renderMeds();renderPresets();renderNames();renderInventory();
+  toast("✅ "+slot.toUpperCase()+" dose marked");
+}
+/* reminder settings */
+function loadReminderForm(){
+  document.getElementById("remEnabled").checked=!!cfg.enabled;
+  setVal("remName",cfg.medName||"");
+  document.getElementById("remForm").innerHTML=formOptionsHtml(cfg.form||"Tablet");
+  setVal("remAmount",cfg.amount||"");
+  setVal("remAm",cfg.am||"08:00");setVal("remPm",cfg.pm||"20:00");
+  updateNotifStatus();
+}
+function saveReminder(){
+  cfg.enabled=document.getElementById("remEnabled").checked;
+  cfg.medName=val("remName");cfg.amount=val("remAmount");cfg.form=val("remForm");
+  cfg.dose=doseString(cfg.amount,cfg.form);
+  cfg.am=val("remAm")||"08:00";cfg.pm=val("remPm")||"20:00";
+  save(pk(LS_REMINDER),cfg);toast("⏰ Reminders saved");
+  if(cfg.enabled && notifSupported() && Notification.permission==="default")reqNotif();
+  renderWeek();checkReminders();
+}
+/* notifications (fire while app is open) */
+function notifSupported(){return "Notification" in window}
+function updateNotifStatus(){const el=document.getElementById("notifStatus");if(!el)return;
+  el.textContent=!notifSupported()?"Notifications aren't supported in this browser.":"Notification permission: "+Notification.permission;}
+function reqNotif(){
+  if(!notifSupported())return toast("Notifications not supported here");
+  Notification.requestPermission().then(p=>{updateNotifStatus();if(p==="granted")toast("🔔 Notifications enabled")});
+}
+function fireNotif(slot){
+  const dog=petName()||"Your dog";
+  const title="💊 "+dog+"’s "+slot.toUpperCase()+" medication";
+  const body=(cfg.medName||"Medication")+(cfg.dose?" "+cfg.dose:"")+" — open the app to mark as taken";
+  if(notifSupported()&&Notification.permission==="granted"){try{const n=new Notification(title,{body,tag:"dht_"+slot});n.onclick=()=>window.focus();}catch(e){}}
+  toast("💊 "+slot.toUpperCase()+" medication due");
+}
+function checkReminders(){
+  if(!cfg.enabled)return;
+  const today=dayKey(new Date().toISOString()), now=new Date();
+  cfg.notified=cfg.notified||{};
+  [["am",cfg.am||"08:00"],["pm",cfg.pm||"20:00"]].forEach(([slot,time])=>{
+    const sched=new Date(today+"T"+time), key=today+"_"+slot;
+    if(now>=sched && !slotMeds(today,slot).length && !cfg.notified[key]){
+      fireNotif(slot);cfg.notified[key]=true;save(pk(LS_REMINDER),cfg);
+    }
+  });
+  renderWeek();
+}
+
+/* ========================= INVENTORY ========================= */
+function invQty(i){return parseFloat(i.count)||0}
+function invLow(i){return invQty(i)<=(parseFloat(i.low)||0)}
+function lowItems(){return inv.filter(invLow)}
+function adjustStock(name,amount,form,sign){
+  const n=parseFloat(amount); if(isNaN(n)||!n)return;
+  const it=inv.find(i=>(i.name||"").toLowerCase()===(name||"").toLowerCase() && i.form===form);
+  if(!it)return;
+  const before=invQty(it);
+  it.count=Math.max(0, before+sign*n);
+  save(pk(LS_INV),inv);
+  if(sign<0 && invLow(it)) toast("⚠️ Low stock: "+it.name+" ("+it.count+" left)");
+}
+function addInvItem(){
+  const name=val("invName"); if(!name)return toast("Enter a medication name");
+  inv.push({id:uid(),name,form:val("invForm"),count:val("invCount")||"0",low:val("invLow")||"0"});
+  save(pk(LS_INV),inv);
+  setVal("invName","");setVal("invCount","");setVal("invLow","");setVal("invForm","Tablet");
+  toast("📦 Added to inventory");renderInventory();
+}
+function delInvItem(id){inv=inv.filter(i=>i.id!==id);save(pk(LS_INV),inv);renderInventory()}
+function refillItem(id){const it=inv.find(i=>i.id===id);if(!it)return;
+  const add=prompt("Add how many units to "+it.name+"? (current: "+invQty(it)+")","0");
+  if(add===null)return; const n=parseFloat(add); if(isNaN(n))return toast("Enter a number");
+  it.count=Math.max(0,invQty(it)+n);save(pk(LS_INV),inv);renderInventory();toast("📦 Stock updated");}
+function editInvItem(id){const it=inv.find(i=>i.id===id);if(!it)return;
+  openModal(`<h2>Edit inventory item</h2>
+    <label>Medication</label><input id="ei_name" type="text" value="${attr(it.name)}">
+    <label>Form / unit</label><select id="ei_form">${formOptionsHtml(it.form||"Tablet")}</select>
+    <div class="field-row">
+      <div><label>Current stock</label><input id="ei_count" type="number" step="0.25" min="0" value="${attr(it.count)}"></div>
+      <div><label>Low alert at</label><input id="ei_low" type="number" step="0.25" min="0" value="${attr(it.low)}"></div>
+    </div>
+    <div class="modal-actions"><button class="btn ghost" onclick="closeModal()">Cancel</button>
+    <button class="btn" onclick="saveEditInv('${id}')">Save changes</button></div>`);
+}
+function saveEditInv(id){const it=inv.find(i=>i.id===id);if(!it)return;
+  const name=val("ei_name");if(!name)return toast("Name can't be empty");
+  it.name=name;it.form=val("ei_form");it.count=val("ei_count")||"0";it.low=val("ei_low")||"0";
+  save(pk(LS_INV),inv);closeModal();renderInventory();toast("✓ Updated");}
+function renderInventory(){
+  const c=document.getElementById("invList"); if(!c)return; c.innerHTML="";
+  const low=lowItems();
+  const banner=document.getElementById("invBanner");
+  if(low.length){banner.style.display="block";
+    banner.textContent="🛒 Time to refill: "+low.map(i=>i.name).join(", ");}
+  else banner.style.display="none";
+  if(!inv.length){c.innerHTML='<div class="empty"><span class="big">📦</span>No medications tracked. Add one above to auto-count doses.</div>';return}
+  [...inv].sort((a,b)=>(a.name||"").localeCompare(b.name||"")).forEach(i=>{
+    const lowf=invLow(i), unit=(formInfo(i.form).unit||i.form||"");
+    const row=document.createElement("div");row.className="entry";
+    row.innerHTML='<div class="badge med">'+(lowf?"🛒":"📦")+'</div>'+
+      '<div class="body"><div class="ttl">'+esc(i.name)+' <span style="color:var(--muted);font-weight:500">· '+esc(i.form||"")+'</span></div>'+
+      '<div class="sub'+(lowf?'" style="color:var(--danger);font-weight:700':"")+'">'+invQty(i)+' '+esc(unit)+' left'+(lowf?" — LOW":"")+
+      ' <span class="muted" style="font-weight:400">(alert at '+(parseFloat(i.low)||0)+')</span></div></div>'+
+      '<div class="acts"><button title="Add stock">＋</button><button title="Edit">✎</button><button title="Delete">✕</button></div>';
+    const b=row.querySelectorAll(".acts button");
+    b[0].onclick=()=>refillItem(i.id);b[1].onclick=()=>editInvItem(i.id);
+    b[2].onclick=()=>{if(confirm("Remove "+i.name+" from inventory?"))delInvItem(i.id)};
+    c.appendChild(row);
+  });
+}
+
+/* ========================= THEME ========================= */
+function applyTheme(t){document.body.classList.toggle("dark",t==="dark");
+  const b=document.getElementById("themeBtn");if(b)b.textContent=t==="dark"?"☀️":"🌙";}
+function toggleTheme(){const t=document.body.classList.contains("dark")?"light":"dark";localStorage.setItem(LS_THEME,t);applyTheme(t)}
+
+/* ========================= COUGH ========================= */
+let selCond="Sleeping/Resting";
+document.querySelectorAll("#condChips .chip").forEach(c=>c.addEventListener("click",()=>{
+  document.querySelectorAll("#condChips .chip").forEach(x=>x.classList.remove("sel"));c.classList.add("sel");selCond=c.dataset.c;}));
+function condEmoji(c){return {"Sleeping/Resting":"😴","Excitement":"🤩","Activity/Exercise":"🏃","Eating/Drinking":"🍖","Other":"❓"}[c]||"😮‍💨"}
+function saveCough(){const time=val("cTime");if(!time)return toast("Pick a date & time");
+  coughs.push({id:uid(),cond:selCond,sev:val("cSeverity"),note:val("cNote"),t:new Date(time).toISOString()});
+  save(pk(LS_COUGH),coughs);setVal("cNote","");setVal("cTime",nowLocalInput());toast("😮‍💨 Cough saved");renderCoughs();}
+function quickCough(){coughs.push({id:uid(),cond:selCond,sev:val("cSeverity"),note:"",t:new Date().toISOString()});
+  save(pk(LS_COUGH),coughs);toast("😮‍💨 Cough logged ("+selCond+")");renderCoughs();}
+function delCough(id){coughs=coughs.filter(c=>c.id!==id);save(pk(LS_COUGH),coughs);renderCoughs()}
+function editCough(id){const c=coughs.find(x=>x.id===id);if(!c)return;
+  const opts=["Sleeping/Resting","Excitement","Activity/Exercise","Eating/Drinking","Other"]
+    .map(o=>`<option ${o===c.cond?"selected":""}>${o}</option>`).join("");
+  const sev=["Mild","Moderate","Severe"].map(s=>`<option ${s===c.sev?"selected":""}>${s}</option>`).join("");
+  openModal(`<h2>Edit cough</h2>
+    <label>Condition</label><select id="ec_cond">${opts}</select>
+    <div class="field-row">
+      <div><label>Date &amp; time</label><input id="ec_time" type="datetime-local" value="${toLocalInput(c.t)}"></div>
+      <div><label>Severity</label><select id="ec_sev">${sev}</select></div>
+    </div>
+    <label>Notes</label><input id="ec_note" type="text" value="${attr(c.note)}">
+    <div class="modal-actions"><button class="btn ghost" onclick="closeModal()">Cancel</button>
+    <button class="btn cough" onclick="saveEditCough('${id}')">Save changes</button></div>`);
+}
+function saveEditCough(id){const c=coughs.find(x=>x.id===id);if(!c)return;
+  c.cond=val("ec_cond");c.sev=val("ec_sev");c.note=val("ec_note");
+  const t=val("ec_time");if(t)c.t=new Date(t).toISOString();
+  save(pk(LS_COUGH),coughs);closeModal();renderCoughs();toast("✓ Updated");}
+function renderCoughs(){renderEntries(document.getElementById("coughList"),coughs,"cough",editCough,delCough,"No coughs logged yet.","😮‍💨")}
+
+/* ========================= SYMPTOM ========================= */
+let selSymp="Diarrhea", addPhoto=null, editPhoto=null;
+document.querySelectorAll("#sympChips .chip").forEach(c=>c.addEventListener("click",()=>{
+  document.querySelectorAll("#sympChips .chip").forEach(x=>x.classList.remove("sel"));c.classList.add("sel");selSymp=c.dataset.c;}));
+function sympEmoji(t){return {"Diarrhea":"💩","Loose stool":"🟤","Vomiting":"🤮","Injury":"🩹","Skin/Rash":"🔴","Appetite":"🍽","Other":"❓"}[t]||"🩺"}
+document.getElementById("sPhotoInput").addEventListener("change",async e=>{
+  const f=e.target.files[0];if(!f)return;
+  try{addPhoto=await compress(f,1100,0.7);const img=document.getElementById("sPhotoImg");img.src=addPhoto;document.getElementById("sPhotoPrev").style.display="block"}
+  catch(x){toast("Couldn't read image")}
+  e.target.value="";
+});
+function clearAddPhoto(){addPhoto=null;document.getElementById("sPhotoPrev").style.display="none";document.getElementById("sPhotoImg").src=""}
+async function saveSymptom(){const time=val("sTime");if(!time)return toast("Pick a date & time");
+  const id=uid();let photoId=null;
+  if(addPhoto){photoId=id;await imgPut("img_"+id,addPhoto)}
+  symps.push({id,type:selSymp,sev:val("sSeverity"),note:val("sNote"),photo:photoId,t:new Date(time).toISOString()});
+  save(pk(LS_SYMP),symps);setVal("sNote","");setVal("sTime",nowLocalInput());clearAddPhoto();
+  toast("🩺 Symptom saved");renderSymps();}
+async function delSymp(id){const s=symps.find(x=>x.id===id);if(s&&s.photo)await imgDel("img_"+s.photo);
+  symps=symps.filter(x=>x.id!==id);save(pk(LS_SYMP),symps);renderSymps();}
+function editSymp(id){const s=symps.find(x=>x.id===id);if(!s)return;editPhoto={current:s.photo,next:undefined};
+  const types=["Diarrhea","Loose stool","Vomiting","Injury","Skin/Rash","Appetite","Other"].map(o=>`<option ${o===s.type?"selected":""}>${o}</option>`).join("");
+  const sev=["Mild","Moderate","Severe"].map(o=>`<option ${o===s.sev?"selected":""}>${o}</option>`).join("");
+  openModal(`<h2>Edit symptom</h2>
+    <label>Type</label><select id="es_type">${types}</select>
+    <div class="field-row">
+      <div><label>Date &amp; time</label><input id="es_time" type="datetime-local" value="${toLocalInput(s.t)}"></div>
+      <div><label>Severity</label><select id="es_sev">${sev}</select></div>
+    </div>
+    <button type="button" class="photo-btn" onclick="document.getElementById('esPhotoInput').click()">📷 ${s.photo?"Replace":"Add"} photo</button>
+    <input type="file" id="esPhotoInput" accept="image/*" capture="environment" style="display:none">
+    <div class="photo-prev" id="esPhotoPrev" style="display:${s.photo?"block":"none"}">
+      <img id="esPhotoImg" data-photo="${s.photo||""}" alt="preview"><button type="button" class="rm" onclick="clearEditPhoto()">✕</button></div>
+    <label>Notes</label><input id="es_note" type="text" value="${attr(s.note)}">
+    <div class="modal-actions"><button class="btn ghost" onclick="closeModal()">Cancel</button>
+    <button class="btn symp" onclick="saveEditSymp('${id}')">Save changes</button></div>`);
+  if(s.photo)hydratePhotos(document.getElementById("modalBody"));
+  document.getElementById("esPhotoInput").addEventListener("change",async e=>{
+    const f=e.target.files[0];if(!f)return;
+    try{const d=await compress(f,1100,0.7);editPhoto.next=d;const img=document.getElementById("esPhotoImg");img.removeAttribute("data-photo");img.src=d;document.getElementById("esPhotoPrev").style.display="block"}
+    catch(x){toast("Couldn't read image")} e.target.value="";});
+}
+function clearEditPhoto(){editPhoto.next=null;document.getElementById("esPhotoPrev").style.display="none"}
+async function saveEditSymp(id){const s=symps.find(x=>x.id===id);if(!s)return;
+  s.type=val("es_type");s.sev=val("es_sev");s.note=val("es_note");
+  const t=val("es_time");if(t)s.t=new Date(t).toISOString();
+  if(editPhoto&&editPhoto.next!==undefined){
+    if(editPhoto.next===null){if(s.photo){await imgDel("img_"+s.photo);s.photo=null}}
+    else{const pid=s.photo||id;await imgPut("img_"+pid,editPhoto.next);s.photo=pid}
+  }
+  save(pk(LS_SYMP),symps);closeModal();renderSymps();toast("✓ Updated");}
+function renderSymps(){renderEntries(document.getElementById("sympList"),symps,"symp",editSymp,delSymp,"No symptoms logged yet.","🩺")}
+
+/* ========================= shared entry renderer ========================= */
+function renderEntries(container,arr,kind,editFn,delFn,emptyMsg,emptyIcon){
+  container.innerHTML="";
+  if(!arr.length){container.innerHTML='<div class="empty"><span class="big">'+emptyIcon+'</span>'+emptyMsg+'</div>';return}
+  const sorted=[...arr].sort((a,b)=>b.t.localeCompare(a.t)).slice(0,80);
+  let lastDay=null;
+  sorted.forEach(e=>{
+    const dk=dayKey(e.t);
+    if(dk!==lastDay){lastDay=dk;const g=document.createElement("div");g.className="daygroup";g.innerHTML="<h3>"+fmtDate(e.t)+"</h3>";container.appendChild(g)}
+    const row=document.createElement("div");row.className="entry";
+    let icon,ttl,sub,thumb="";
+    if(kind==="med"){icon="💊";ttl=esc(e.name)+(e.dose?' <span style="color:var(--muted);font-weight:500">· '+esc(e.dose)+'</span>':"");sub=e.note?esc(e.note):"";}
+    else if(kind==="cough"){icon=condEmoji(e.cond);ttl=icon+" "+esc(e.cond);sub=(e.sev||"")+(e.note?" — "+esc(e.note):"");}
+    else{icon=sympEmoji(e.type);ttl=icon+" "+esc(e.type);sub=(e.sev||"")+(e.note?" — "+esc(e.note):"");
+      if(e.photo)thumb='<img class="thumb" data-photo="'+e.photo+'" style="display:none" onclick="viewPhoto(\''+e.photo+'\')" alt="symptom photo">';}
+    row.innerHTML='<div class="badge '+kind+'">'+icon+'</div>'+
+      '<div class="body"><div class="ttl">'+ttl+'</div>'+(sub?'<div class="sub">'+sub+'</div>':'')+
+      '<div class="when">'+fmtTime(e.t)+'</div>'+thumb+'</div>'+
+      '<div class="acts"><button title="Edit" aria-label="Edit">✎</button><button title="Delete" aria-label="Delete">✕</button></div>';
+    const btns=row.querySelectorAll(".acts button");
+    btns[0].onclick=()=>editFn(e.id);
+    btns[1].onclick=()=>{if(confirm("Delete this entry?"))delFn(e.id)};
+    container.appendChild(row);
+  });
+  hydratePhotos(container);
+}
+
+/* ========================= VET ========================= */
+function loadVetInfo(){setVal("vClinic",vet.clinic||"");setVal("vDoctor",vet.doctor||"");setVal("vPhone",vet.phone||"");setVal("vAddr",vet.addr||"")}
+function saveVetInfo(){vet={clinic:val("vClinic"),doctor:val("vDoctor"),phone:val("vPhone"),addr:val("vAddr")};save(pk(LS_VET),vet);toast("🏥 Vet info saved")}
+function saveVisit(){const date=val("viDate");if(!date)return toast("Pick a date");
+  visits.push({id:uid(),date,reason:val("viReason"),diag:val("viDiag"),price:val("viPrice")});
+  save(pk(LS_VISIT),visits);setVal("viReason","");setVal("viDiag","");setVal("viPrice","");setVal("viDate",dayKey(new Date().toISOString()));
+  toast("🧾 Visit saved");renderVisits();}
+function delVisit(id){visits=visits.filter(v=>v.id!==id);save(pk(LS_VISIT),visits);renderVisits()}
+function editVisit(id){const v=visits.find(x=>x.id===id);if(!v)return;
+  openModal(`<h2>Edit visit</h2>
+    <div class="field-row"><div><label>Date</label><input id="ev_date" type="date" value="${attr(v.date)}"></div>
+    <div><label>Price paid</label><input id="ev_price" type="number" min="0" step="0.01" value="${attr(v.price)}"></div></div>
+    <label>Reason</label><input id="ev_reason" type="text" value="${attr(v.reason)}">
+    <label>Diagnosis / treatment</label><textarea id="ev_diag">${esc(v.diag)}</textarea>
+    <div class="modal-actions"><button class="btn ghost" onclick="closeModal()">Cancel</button>
+    <button class="btn vet" onclick="saveEditVisit('${id}')">Save changes</button></div>`);
+}
+function saveEditVisit(id){const v=visits.find(x=>x.id===id);if(!v)return;
+  const d=val("ev_date");if(!d)return toast("Date required");
+  v.date=d;v.price=val("ev_price");v.reason=val("ev_reason");v.diag=val("ev_diag");
+  save(pk(LS_VISIT),visits);closeModal();renderVisits();toast("✓ Updated");}
+function renderVisits(){
+  const c=document.getElementById("visitList");c.innerHTML="";
+  const tot=visits.reduce((s,v)=>s+(parseFloat(v.price)||0),0);
+  document.getElementById("visitTotal").textContent=visits.length?("· "+visits.length+" visits · "+money(tot)+" total"):"";
+  if(!visits.length){c.innerHTML='<div class="empty"><span class="big">🧾</span>No visits logged yet.</div>';return}
+  [...visits].sort((a,b)=>b.date.localeCompare(a.date)).forEach(v=>{
+    const row=document.createElement("div");row.className="entry";
+    row.innerHTML='<div class="badge vet">🏥</div>'+
+      '<div class="body"><div class="ttl">'+esc(v.reason||"Visit")+(v.price?' <span style="color:var(--muted);font-weight:500">· '+money(v.price)+'</span>':"")+'</div>'+
+      (v.diag?'<div class="sub">'+esc(v.diag)+'</div>':'')+
+      '<div class="when">'+fmtDate(v.date+"T12:00:00")+'</div></div>'+
+      '<div class="acts"><button title="Edit">✎</button><button title="Delete">✕</button></div>';
+    const b=row.querySelectorAll(".acts button");
+    b[0].onclick=()=>editVisit(v.id);b[1].onclick=()=>{if(confirm("Delete this visit?"))delVisit(v.id)};
+    c.appendChild(row);
+  });
+}
+
+/* ========================= REPORT ========================= */
+const rFrom=document.getElementById("rFrom"),rTo=document.getElementById("rTo");
+document.querySelectorAll("#rangeBtns button").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll("#rangeBtns button").forEach(x=>x.classList.remove("sel"));b.classList.add("sel");
+  const r=b.dataset.r,to=new Date();
+  if(r==="all"){const all=[...meds,...coughs,...symps].map(e=>e.t).concat(visits.map(v=>v.date+"T12:00:00")).sort();
+    rFrom.value=all.length?dayKey(all[0]):dayKey(to.toISOString());}
+  else{const from=new Date();from.setDate(from.getDate()-(parseInt(r,10)-1));rFrom.value=dayKey(from.toISOString());}
+  rTo.value=dayKey(to.toISOString());renderReport();}));
+rFrom.addEventListener("change",()=>{clearRangeSel();renderReport()});
+rTo.addEventListener("change",()=>{clearRangeSel();renderReport()});
+function clearRangeSel(){document.querySelectorAll("#rangeBtns button").forEach(x=>x.classList.remove("sel"))}
+function dayList(start,end){const out=[],d=new Date(start);d.setHours(0,0,0,0);const e=new Date(end);e.setHours(0,0,0,0);
+  while(d<=e){out.push(new Date(d));d.setDate(d.getDate()+1)}return out}
+
+function renderReport(){
+  const out=document.getElementById("reportOut");
+  if(!rFrom.value||!rTo.value){const to=new Date(),from=new Date();from.setDate(from.getDate()-29);rFrom.value=dayKey(from.toISOString());rTo.value=dayKey(to.toISOString())}
+  const start=new Date(rFrom.value+"T00:00:00"),end=new Date(rTo.value+"T23:59:59.999");
+  const inR=e=>{const d=new Date(e.t);return d>=start&&d<=end};
+  const m=meds.filter(inR).sort((a,b)=>a.t.localeCompare(b.t));
+  const c=coughs.filter(inR).sort((a,b)=>a.t.localeCompare(b.t));
+  const s=symps.filter(inR).sort((a,b)=>a.t.localeCompare(b.t));
+  const vis=visits.filter(v=>{const d=new Date(v.date+"T12:00:00");return d>=start&&d<=end}).sort((a,b)=>a.date.localeCompare(b.date));
+  const startDay=new Date(rFrom.value+"T00:00:00"), endDay=new Date(rTo.value+"T00:00:00");
+  const days=Math.max(1,Math.round((endDay-startDay)/86400000)+1);  // inclusive day count
+  const avgCough=(c.length/days).toFixed(1);
+  const dogName=petName();
+  const avatarTag='<img data-photo="" id="rptAvatar" style="display:none" alt="">';
+
+  const conds={};c.forEach(x=>conds[x.cond]=(conds[x.cond]||0)+1);
+  const sevs={Mild:0,Moderate:0,Severe:0};c.forEach(x=>{if(sevs[x.sev]!=null)sevs[x.sev]++});
+  const sympTypes={};s.forEach(x=>sympTypes[x.type]=(sympTypes[x.type]||0)+1);
+  const visTot=vis.reduce((a,v)=>a+(parseFloat(v.price)||0),0);
+
+  let html="";
+  html+='<div class="printhead">'+avatarTag+'<div><h1>🐾 '+(dogName?esc(dogName)+" — ":"")+'Health Record</h1>'+
+        '<div class="muted">'+fmtDate(start.toISOString())+' – '+fmtDate(end.toISOString())+' · '+days+' day'+(days>1?"s":"")+
+        ' · generated '+new Date().toLocaleDateString()+'</div>'+
+        (vet.clinic||vet.doctor?'<div class="muted">'+esc([vet.clinic,vet.doctor].filter(Boolean).join(" · "))+(vet.phone?" · "+esc(vet.phone):"")+'</div>':"")+
+        '</div></div>';
+
+  // summary
+  html+='<div class="card"><h2>Summary</h2><div class="stats">'+
+        '<div class="stat"><div class="n">'+c.length+'</div><div class="l">Coughs</div></div>'+
+        '<div class="stat"><div class="n">'+avgCough+'</div><div class="l">Avg coughs/day</div></div>'+
+        '<div class="stat"><div class="n">'+s.length+'</div><div class="l">Symptoms</div></div>'+
+        '<div class="stat"><div class="n">'+m.length+'</div><div class="l">Med doses</div></div>'+
+        '</div>';
+
+  // daily cough bar chart
+  if(c.length){
+    const dl=dayList(start,end), perDayCnt=dl.map(d=>c.filter(x=>dayKey(x.t)===dayKey(d.toISOString())).length);
+    const maxV=Math.max(1,...perDayCnt), n=dl.length, lblEvery=Math.ceil(n/8);
+    let cols="",lbls="";
+    dl.forEach((d,i)=>{const v=perDayCnt[i],h=Math.round(v/maxV*100);
+      cols+='<div class="col" title="'+fmtDate(d.toISOString())+': '+v+'"><div class="v">'+(v||"")+'</div>'+
+            '<div class="fill'+(v?"":" zero")+'" style="height:'+(v?h:0)+'%"></div></div>';
+      lbls+='<div class="lbl">'+((i%lblEvery===0||i===n-1)?(d.getMonth()+1)+"/"+d.getDate():"")+'</div>';});
+    html+='<h2 style="margin-top:18px">Coughs per day</h2><div class="chart"><div class="plot">'+cols+'</div><div class="xax">'+lbls+'</div></div>';
+
+    // condition breakdown
+    html+='<h2 style="margin-top:18px">Coughs by condition</h2>';
+    const maxC=Math.max(...Object.values(conds));
+    Object.entries(conds).sort((a,b)=>b[1]-a[1]).forEach(([k,v])=>{const pct=Math.round(v/maxC*100);
+      html+='<div class="bar-row"><div class="top"><span>'+condEmoji(k)+' '+esc(k)+'</span><span><b>'+v+'</b> ('+Math.round(v/c.length*100)+'%)</span></div>'+
+            '<div class="bar"><span style="width:'+pct+'%"></span></div></div>';});
+    html+='<div class="legend">Severity — Mild: '+sevs.Mild+' · Moderate: '+sevs.Moderate+' · Severe: '+sevs.Severe+'</div>';
+  }
+  html+='</div>';
+
+  // symptoms summary
+  if(s.length){
+    html+='<div class="card"><h2>Symptoms</h2>';
+    const maxS=Math.max(...Object.values(sympTypes));
+    Object.entries(sympTypes).sort((a,b)=>b[1]-a[1]).forEach(([k,v])=>{const pct=Math.round(v/maxS*100);
+      html+='<div class="bar-row"><div class="top"><span>'+sympEmoji(k)+' '+esc(k)+'</span><span><b>'+v+'</b></span></div>'+
+            '<div class="bar"><span style="width:'+pct+'%;background:var(--symp)"></span></div></div>';});
+    html+='</div>';
+  }
+
+  // medications given
+  if(m.length){const byName={};m.forEach(x=>{const k=x.name+(x.dose?" ("+x.dose+")":"");byName[k]=(byName[k]||0)+1});
+    html+='<div class="card"><h2>Medications given</h2><table class="report-table"><tr><th>Medication</th><th>Doses</th></tr>';
+    Object.entries(byName).forEach(([k,v])=>html+='<tr><td>'+esc(k)+'</td><td>'+v+'</td></tr>');html+='</table></div>';}
+
+  // vet visits & costs
+  if(vis.length){
+    html+='<div class="card"><h2>Vet visits &amp; costs <span class="sm">· '+money(visTot)+' total</span></h2><table class="report-table"><tr><th>Date</th><th>Reason</th><th>Diagnosis</th><th>Price</th></tr>';
+    vis.forEach(v=>html+='<tr><td>'+fmtDate(v.date+"T12:00:00")+'</td><td>'+esc(v.reason)+'</td><td>'+esc(v.diag)+'</td><td>'+(v.price?money(v.price):"")+'</td></tr>');
+    html+='</table></div>';}
+
+  // detailed log
+  const events=[...m.map(x=>({t:x.t,type:"med",label:x.name+(x.dose?" · "+x.dose:""),extra:x.note})),
+    ...c.map(x=>({t:x.t,type:"cough",label:x.cond,extra:[x.sev,x.note].filter(Boolean).join(" — ")})),
+    ...s.map(x=>({t:x.t,type:"symp",label:x.type,extra:[x.sev,x.note].filter(Boolean).join(" — "),photo:x.photo}))]
+    .sort((a,b)=>a.t.localeCompare(b.t));
+  if(events.length){
+    html+='<div class="card"><h2>Detailed log</h2><table class="report-table"><tr><th>Date</th><th>Time</th><th>Type</th><th>Details</th></tr>';
+    let last=null;
+    events.forEach(e=>{const dk=dayKey(e.t),dc=dk!==last?fmtDate(e.t):"";last=dk;
+      const tcls=e.type==="med"?"t-med":e.type==="cough"?"t-cough":"t-symp";
+      const tlbl=e.type==="med"?"💊 Med":e.type==="cough"?"😮‍💨 Cough":"🩺 Symptom";
+      const ph=e.photo?'<br><img class="rthumb" data-photo="'+e.photo+'" style="display:none" alt="photo">':"";
+      html+='<tr><td>'+dc+'</td><td>'+fmtTime(e.t)+'</td><td class="'+tcls+'">'+tlbl+'</td>'+
+            '<td>'+esc(e.label)+(e.extra?' <span class="muted">'+esc(e.extra)+'</span>':"")+ph+'</td></tr>';});
+    html+='</table></div>';
+  }
+
+  if(!events.length&&!vis.length)html+='<div class="card"><div class="empty"><span class="big">📭</span>No entries in this date range.</div></div>';
+
+  out.innerHTML=html;
+  // hydrate report avatar + symptom photos
+  imgGet(avatarKey()).then(d=>{const a=document.getElementById("rptAvatar");if(a&&d){a.src=d;a.style.display=""}});
+  hydratePhotos(out);
+}
+
+/* ========================= BACKUP / RESTORE ========================= */
+async function exportData(){
+  toast("Preparing backup…");
+  const images=await imgAll();
+  const data={app:"dog-health-tracker",version:2,exported:new Date().toISOString(),activeId,
+    pets:pets.map(p=>({id:p.id,name:p.name,
+      meds:load(LS_MED+"_"+p.id),coughs:load(LS_COUGH+"_"+p.id),symps:load(LS_SYMP+"_"+p.id),
+      visits:load(LS_VISIT+"_"+p.id),vet:loadObj(LS_VET+"_"+p.id),reminder:loadObj(LS_REMINDER+"_"+p.id),
+      inventory:load(LS_INV+"_"+p.id)})),
+    images};
+  const blob=new Blob([JSON.stringify(data)],{type:"application/json"});
+  const url=URL.createObjectURL(blob),a=document.createElement("a");
+  a.href=url;a.download="pet-health-backup-"+dayKey(new Date().toISOString())+".json";a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);toast("⬇️ Backup downloaded");
+}
+document.getElementById("importInput").addEventListener("change",async e=>{
+  const f=e.target.files[0];if(!f)return;e.target.value="";
+  if(!confirm("Importing will REPLACE all current data with the backup. Continue?"))return;
+  try{const d=JSON.parse(await f.text());
+    if(d.app!=="dog-health-tracker")return toast("Not a valid backup file");
+    if(Array.isArray(d.pets)){                               // version 2 (multi-pet)
+      pets=d.pets.map(p=>({id:p.id,name:p.name}));save(LS_PETS,pets);
+      d.pets.forEach(p=>{
+        save(LS_MED+"_"+p.id,p.meds||[]);save(LS_COUGH+"_"+p.id,p.coughs||[]);save(LS_SYMP+"_"+p.id,p.symps||[]);
+        save(LS_VISIT+"_"+p.id,p.visits||[]);save(LS_VET+"_"+p.id,p.vet||{});save(LS_REMINDER+"_"+p.id,p.reminder||{});
+        save(LS_INV+"_"+p.id,p.inventory||[]);
+      });
+      activeId=(d.activeId&&pets.find(p=>p.id===d.activeId))?d.activeId:(pets[0]&&pets[0].id);
+    }else{                                                   // version 1 (single pet)
+      const id=uid();pets=[{id,name:d.name||"My pet"}];save(LS_PETS,pets);
+      save(LS_MED+"_"+id,d.meds||[]);save(LS_COUGH+"_"+id,d.coughs||[]);save(LS_SYMP+"_"+id,d.symps||[]);
+      save(LS_VISIT+"_"+id,d.visits||[]);save(LS_VET+"_"+id,d.vet||{});save(LS_REMINDER+"_"+id,d.reminder||{});
+      activeId=id;
+      if(d.images&&d.images["dog_avatar"]){d.images["pet_avatar_"+id]=d.images["dog_avatar"];delete d.images["dog_avatar"]}
+    }
+    localStorage.setItem(LS_ACTIVE,activeId);
+    if(d.images){for(const key of Object.keys(d.images))await imgPut(key,d.images[key])}
+    loadPetData();await loadAvatar();refreshAll();
+    toast("✓ Backup restored");
+  }catch(x){toast("Couldn't read backup file")}
+});
+
+/* ---------- tiny DOM utils ---------- */
+function val(id){return document.getElementById(id).value.trim()}
+function setVal(id,v){document.getElementById(id).value=v}
+
+/* ---------- init ---------- */
+applyTheme(localStorage.getItem(LS_THEME)||"light");
+setVal("mTime",nowLocalInput());setVal("cTime",nowLocalInput());setVal("sTime",nowLocalInput());
+setVal("viDate",dayKey(new Date().toISOString()));
+document.getElementById("mForm").innerHTML=formOptionsHtml("Tablet");
+document.getElementById("invForm").innerHTML=formOptionsHtml("Tablet");
+document.querySelector('#condChips .chip[data-c="Sleeping/Resting"]').classList.add("sel");
+document.querySelector('#sympChips .chip[data-c="Diarrhea"]').classList.add("sel");
+(async function(){
+  await initPets();
+  renderPetSelect();loadPetData();
+  loadVetInfo();await loadAvatar();loadReminderForm();
+  renderMeds();renderPresets();renderNames();renderCoughs();renderSymps();renderVisits();renderInventory();
+  checkReminders();setInterval(checkReminders,30000);
+})();
+</script>
+</body>
+</html>
